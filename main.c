@@ -21,10 +21,10 @@ int main(void) {
     // Writting in the standard output
     write(STDOUT_FILENO, buffer, strlen(buffer));
 
-    while (1) {
-        strcpy(buffer, "enseah % ");
-        write(STDOUT_FILENO, buffer, strlen(buffer));
+    strcpy(buffer, "enseah % ");
+    write(STDOUT_FILENO, buffer, strlen(buffer));
 
+    while (1) {
         // Replace every character of buffer with 0 -> clear the buffer
         memset(buffer, 0, BUFFER_SIZE);
         // Reading user input in the standard input
@@ -50,6 +50,7 @@ int main(void) {
         if (strcmp(buffer, "exit") == 0) {
             strcpy(buffer, "Bye bye...\n");
             write(STDOUT_FILENO, buffer, strlen(buffer));
+            return EXIT_SUCCESS;
         }
 
         int pid, status;
@@ -65,6 +66,27 @@ int main(void) {
         }
         else { // Father code
             wait(&status);
+
+            memset(buffer, 0, BUFFER_SIZE);
+            strcat(buffer, "enseah [");
+
+            char status_str[4];
+
+            // If the return value of the child is an exit value
+            if (WIFEXITED(status)) {
+                strcat(buffer, "exit:");
+                // Convert the return value (int) to a string (char *)
+                sprintf(status_str, "%d", WEXITSTATUS(status));
+            }
+            // If the return value of the child is a signal
+            else if (WIFSIGNALED(status)) {
+                strcat(buffer, "sign:");
+                sprintf(status_str, "%d", WTERMSIG(status));
+            }
+
+            strcat(buffer, status_str);
+            strcat(buffer, "] % ");
+            write(STDOUT_FILENO, buffer, strlen(buffer));
         }
     }
 }
