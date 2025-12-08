@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #define STDIN_FILENO 0
 #define STDOUT_FILENO 1
@@ -17,19 +18,38 @@ int main(void) {
 
     strcpy(buffer, "Bienvenue dans le Shell ENSEA.\n"
                    "Pour quitter, tapez 'exit'\n");
+    // Writting in the standard output
     write(STDOUT_FILENO, buffer, strlen(buffer));
 
-    ssize_t bytes;
     while (1) {
         strcpy(buffer, "enseah % ");
         write(STDOUT_FILENO, buffer, strlen(buffer));
 
+        // Replace every character of buffer with 0 -> clear the buffer
+        memset(buffer, 0, BUFFER_SIZE);
+        // Reading user input in the standard input
+        ssize_t bytes;
         bytes = read(STDIN_FILENO, buffer, BUFFER_SIZE);
 
-
-        if (bytes < 0) {
+        if (bytes == -1) {
             perror("read");
             exit(EXIT_FAILURE);
+        }
+
+        int pid, status;
+        pid = fork();
+
+        if (pid == -1) {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        }
+        if (pid == 0) { // Child code
+            // Replace the '\n' with '\0' so that execlp execute for exemple "ls" instead of "ls\n"
+            buffer[strlen(buffer) - 1] = '\0';
+            execlp(buffer, buffer, (char *)NULL);
+        }
+        else { // Father code
+            wait(&status);
         }
     }
 
