@@ -36,6 +36,22 @@ int main(void) {
             exit(EXIT_FAILURE);
         }
 
+        // When there is no '\n' in buffer, it means that the user typed <ctrl> + d
+        if (strchr(buffer, '\n') == NULL) {
+            strcpy(buffer, "Bye bye...\n");
+            write(STDOUT_FILENO, buffer, strlen(buffer));
+            return EXIT_SUCCESS;
+        }
+
+        // Replace the '\n' with '\0' so that execlp execute for exemple "ls" instead of "ls\n"
+        buffer[strlen(buffer) - 1] = '\0';
+
+        // If the user typed exit, stop the program
+        if (strcmp(buffer, "exit") == 0) {
+            strcpy(buffer, "Bye bye...\n");
+            write(STDOUT_FILENO, buffer, strlen(buffer));
+        }
+
         int pid, status;
         pid = fork();
 
@@ -44,14 +60,11 @@ int main(void) {
             exit(EXIT_FAILURE);
         }
         if (pid == 0) { // Child code
-            // Replace the '\n' with '\0' so that execlp execute for exemple "ls" instead of "ls\n"
-            buffer[strlen(buffer) - 1] = '\0';
             execlp(buffer, buffer, (char *)NULL);
+            return EXIT_FAILURE;
         }
         else { // Father code
             wait(&status);
         }
     }
-
-    return EXIT_SUCCESS;
 }
