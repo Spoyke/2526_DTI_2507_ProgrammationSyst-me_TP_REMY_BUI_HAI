@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.31)
 project(TP C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(TP main.c
-        loop.c)
+add_executable(TP main.c)
