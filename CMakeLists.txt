@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.31)
-project(TP C)
+cmake_minimum_required(VERSION 4.1)
+project(Temp C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(TP main.c)
+add_executable(Temp main.c)
