@@ -18,6 +18,10 @@ Pour cette question, plutôt que d'utiliser le fichier de sortie standard, on li
 
 ### Question 4 :
 
+Cette question consiste à regarder si le processus fils s'est terminé normalement (avec un return) ou par un signal. Pour cela on utilise la valeur de retour du fils (status) pour changer l'affichage du terminal. Il y a quatres fonctions utiles vu en TD : ```WIFEXITED``` qui indique si le processus s'est arrêté normalement, ```WIFSIGNALED``` qui indique si le processus s'est arrêté avec un signal (kill par exemple), ```WEXITSTATUS```  et ```WTERMSIG``` qui traduisentt status en un entier correspondant à la valeur de retour du return ou du signal de fin du processus.
+
+<img width="738" height="68" alt="image" src="https://github.com/user-attachments/assets/12ba0b0d-dd2e-441b-a55b-761fbccbd7b0" />
+
 ### Question 5 : 
 
 ### Question 6 :
