@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 
 #define STDIN_FILENO 0
 #define STDOUT_FILENO 1
@@ -14,6 +15,7 @@
 #define INT_SIZE 4
 #define CHAR_SIZE 1
 #define MAX_ARGS 16
+#define NS_TO_MS 1000000
 
 ssize_t searchChar(const char * str, size_t size, char c);
 int strslice(char ** dst, char * src);
@@ -22,6 +24,7 @@ int changestdin(char * path);
 
 int main(void) {
     char buffer[BUFFER_SIZE];
+    struct timespec start, end;
 
     // Writing in the standard output
     strncpy(buffer,"Bienvenue dans le Shell ENSEA.\nPour quitter, tapez 'exit'\n", BUFFER_SIZE);
@@ -64,6 +67,10 @@ int main(void) {
             exit(EXIT_FAILURE);
         }
         if (pid == 0) { // Child code
+            if (clock_gettime(CLOCK_REALTIME, &start)==-1){
+                perror("clock_gettime");
+                exit(EXIT_FAILURE);
+            }
             // Declare a variable to store the arguments of buffer.
             // Size BUFFER_SIZE so that we can store every character of buffer into args
             char * args[BUFFER_SIZE];
@@ -99,6 +106,17 @@ int main(void) {
         // Father code
         wait(&status);
 
+        if (clock_gettime(CLOCK_REALTIME, &end)==-1){
+            perror("clock_gettime");
+            exit(EXIT_FAILURE);
+        }
+
+        char elapsed_time[15] = {0};
+        long nanosec = end.tv_nsec - start.tv_nsec;
+        nanosec = nanosec /  NS_TO_MS;
+
+        sprintf(elapsed_time, "%ld", nanosec);
+
         strncpy(buffer, "", BUFFER_SIZE);
 
         // Declare an array of 4 char to match the size of an int to convert status (int) into a string (char *)
@@ -108,12 +126,12 @@ int main(void) {
         if (WIFEXITED(status)) {
             // Convert the return value (int) to a string (char *)
             sprintf(status_str, "%d", WEXITSTATUS(status));
-            snprintf(buffer, BUFFER_SIZE, "enseah [exit:%s] %% ", status_str);
+            snprintf(buffer, BUFFER_SIZE, "enseah [exit:%s|%sms] %% ", status_str, elapsed_time);
         }
         // If the child was stopped by a signal
         else if (WIFSIGNALED(status)) {
             sprintf(status_str, "%d", WTERMSIG(status));
-            snprintf(buffer, BUFFER_SIZE, "enseah [sign:%s] %% ", status_str);
+            snprintf(buffer, BUFFER_SIZE, "enseah [sign:%s|%sms] %% ", status_str, elapsed_time);
         }
 
         write(STDOUT_FILENO, buffer, BUFFER_SIZE);
