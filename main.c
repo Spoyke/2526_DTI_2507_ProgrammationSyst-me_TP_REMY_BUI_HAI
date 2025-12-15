@@ -60,6 +60,12 @@ int main(void) {
         }
 
         int status;
+
+        if (clock_gettime(CLOCK_REALTIME, &start)==-1){
+            perror("clock_gettime");
+            exit(EXIT_FAILURE);
+        }
+
         const int pid = fork();
 
         if (pid == -1) {
@@ -67,10 +73,6 @@ int main(void) {
             exit(EXIT_FAILURE);
         }
         if (pid == 0) { // Child code
-            if (clock_gettime(CLOCK_REALTIME, &start)==-1){
-                perror("clock_gettime");
-                exit(EXIT_FAILURE);
-            }
             // Declare a variable to store the arguments of buffer.
             // Size BUFFER_SIZE so that we can store every character of buffer into args
             char * args[BUFFER_SIZE];
