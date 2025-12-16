@@ -16,6 +16,11 @@ Pour cette question, plutôt que d'utiliser le fichier de sortie standard, on li
 
 ### Question 3 :
 
+Il faut implémenter 2 fonctionnalités dans cette question : la sortie du shell lorsqu'on tape ctrl+d ou lorsqu'on écrit exit dans le shell.
+- Pour ctrl+d : cette commande envoie directement ce qui est écrit dans le shell dans le buffer. Par conséquent, il n'y a pas de "\n" à la fin de la commande comme on pourrait avoir en appuyant sur le bouton entrée. Donc on détecte notre ctrl+d si notre buffer ne contient pas de "\n".
+- Pour 'exit' : on regarde tout simplement qu'on ait tapé 'exit'.
+
+
 ### Question 4 :
 
 Cette question consiste à regarder si le processus fils s'est terminé normalement (avec un return) ou par un signal. Pour cela on utilise la valeur de retour du fils (status) pour changer l'affichage du terminal. Il y a quatres fonctions utiles vu en TD : ```WIFEXITED``` qui indique si le processus s'est arrêté normalement, ```WIFSIGNALED``` qui indique si le processus s'est arrêté avec un signal (kill par exemple), ```WEXITSTATUS```  et ```WTERMSIG``` qui traduisentt status en un entier correspondant à la valeur de retour du return ou du signal de fin du processus.
@@ -23,6 +28,8 @@ Cette question consiste à regarder si le processus fils s'est terminé normalem
 <img width="738" height="68" alt="image" src="https://github.com/user-attachments/assets/12ba0b0d-dd2e-441b-a55b-761fbccbd7b0" />
 
 ### Question 5 : 
+
+Dans cette question, pour récupérer le temps d'exécution, on va mesurer la durée entre le début de la tâche et la fin avec la fonction clock_gettime. On l'implémente en début et à la fin du processus avec une gestion d'erreur. La fonction stock le temps réel de notre appareil dans une structure timespec qui contient un élément en nanoseconde et une autre en seconde. On conserve la différence en nanoseconde, on la convertit en ms, puis on l'affiche.
 
 ### Question 6 :
 
