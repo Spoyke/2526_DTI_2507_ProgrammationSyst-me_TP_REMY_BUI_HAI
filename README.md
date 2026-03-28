@@ -1,50 +1,101 @@
-# [Programmation système] Compte rendu 
+# ENSEASH — ENSEA Shell
 
-## Simon REMY et Christophe
+Un shell Unix minimaliste développé en C dans le cadre du cours de **Programmation Système** à l'ENSEA.
 
-### Question 1 :
+**Auteurs :** Simon REMY & Christophe BUI HAI
 
-La première question consiste en afficher un texte au lancement du programme. Pour cela, on a définie les numéro des fichiers d'entrée, de sortie et d'erreur standard. On utilise la fonction ```write``` pour écrire dans le fichier de sortie standard soit le terminal pour afficher le message voulu : 
+---
 
-<img width="428" height="94" alt="image" src="https://github.com/user-attachments/assets/ad09f1b2-d246-4b4d-b426-0268213200cc" />
+## Présentation
 
-### Question 2 :
+ENSEASH est un interpréteur de commandes (shell) implémenté from scratch en C, sans utiliser la bibliothèque standard de haut niveau. Il reproduit les fonctionnalités essentielles d'un shell Unix : exécution de commandes, gestion des arguments, redirections d'entrée/sortie, et affichage du statut de sortie avec le temps d'exécution.
 
-Pour cette question, plutôt que d'utiliser le fichier de sortie standard, on lit l'entrée standard avec la fonction ```read``` qui nous permet de stocker, dans un tableau de caractère ce que l'utilisateur écrit. Une fois l'entrée stocké, on peut utiliser la fonction ```execlp``` qui exécute la commande stockée dans buffer. A noter qu'il faut appeler cette fonction dans un autre processus (un processus fils) que celui qui exécute le code car ```execlp``` va substituer le processus actuel par le processus exécutant la commande, ce qui nous empêche de rester dans le code du projet et ainsi de reboucler sur le message ```enseah %``` après ```execlp``` (avec une boucle while(1)).
+---
 
-<img width="549" height="132" alt="image" src="https://github.com/user-attachments/assets/93d740e2-45f9-47f2-bc41-6489738f8808" />
+## Fonctionnalités
 
-### Question 3 :
+### Exécution de commandes
+ENSEASH exécute n'importe quelle commande disponible dans le `PATH` du système. Chaque commande est lancée dans un processus fils via `fork()` + `execvp()`, ce qui permet au shell de rester actif après l'exécution.
 
-Il faut implémenter 2 fonctionnalités dans cette question : la sortie du shell lorsqu'on tape ctrl+d ou lorsqu'on écrit exit dans le shell.
-- Pour ctrl+d : cette commande envoie directement ce qui est écrit dans le shell dans le buffer. Par conséquent, il n'y a pas de "\n" à la fin de la commande comme on pourrait avoir en appuyant sur le bouton entrée. Donc on détecte notre ctrl+d si notre buffer ne contient pas de "\n".
-- Pour 'exit' : on regarde tout simplement qu'on ait tapé 'exit'.
+### Gestion des arguments
+Les commandes peuvent être passées avec plusieurs arguments séparés par des espaces. Par exemple :
+```
+enseah % ls -la /tmp
+```
 
+### Redirections
+- **Redirection de la sortie standard** (`>`) : redirige la sortie d'une commande vers un fichier (créé ou écrasé).
+  ```
+  enseah % ls > fichiers.txt
+  ```
+- **Redirection de l'entrée standard** (`<`) : lit l'entrée d'une commande depuis un fichier.
+  ```
+  enseah % wc -l < fichiers.txt
+  ```
 
-### Question 4 :
+### Affichage du statut et du temps d'exécution
+Après chaque commande, le prompt indique :
+- Le **code de retour** (exit) ou le **numéro de signal** (sign) ayant terminé le processus.
+- Le **temps d'exécution** en millisecondes.
 
-Cette question consiste à regarder si le processus fils s'est terminé normalement (avec un return) ou par un signal. Pour cela on utilise la valeur de retour du fils (status) pour changer l'affichage du terminal. Il y a quatres fonctions utiles vu en TD : ```WIFEXITED``` qui indique si le processus s'est arrêté normalement, ```WIFSIGNALED``` qui indique si le processus s'est arrêté avec un signal (kill par exemple), ```WEXITSTATUS```  et ```WTERMSIG``` qui traduisentt status en un entier correspondant à la valeur de retour du return ou du signal de fin du processus.
+```
+enseah [exit:0|12ms] %
+enseah [sign:11|3ms] %
+```
 
-<img width="738" height="68" alt="image" src="https://github.com/user-attachments/assets/12ba0b0d-dd2e-441b-a55b-761fbccbd7b0" />
+### Quitter le shell
+- Taper `exit` dans le prompt.
+- Envoyer `Ctrl+D` (fin de fichier sur l'entrée standard).
 
-### Question 5 : 
+Dans les deux cas, le shell affiche `Bye bye...` avant de se terminer.
 
-Dans cette question, pour récupérer le temps d'exécution, on va mesurer la durée entre le début de la tâche et la fin avec la fonction clock_gettime. On l'implémente en début et à la fin du processus avec une gestion d'erreur. La fonction stock le temps réel de notre appareil dans une structure timespec qui contient un élément en nanoseconde et une autre en seconde. On conserve la différence en nanoseconde, on la convertit en ms, puis on l'affiche.
+---
 
-### Question 6 :
+## Compilation et utilisation
 
-Pour gérer des commandes avec plusieurs arguments, il faut étudier l'entrée de l'utilisateur en séparant ce string en un tableau de string composé de tous les éléments du buffer, séparé à chaque caractère espace. Par exemple, on transforme ```"ls -a"``` en ```["ls", "-a"]```. En adaptant la commande de cette façon, on peut appelér la fonction ```execlp``` en donnant directement le tableau des arguments.
+### Prérequis
+- Un compilateur C (`gcc` ou `clang`)
+- Un système Unix/Linux
 
-Pour faire cette fonction, on utilise la fonction ```strtok``` qui renvoie un pointeur vers la chaîne de caractère allant du début de buffer jusqu'au premier espace ' '. Il suffit ensuite de stocké cette chaîne de caractère et de réutiliser ```strtok``` jusqu'à ce qu'il n'y ait plus de séparation possible.
+### Compilation
+```bash
+gcc -Wall -Wextra -o enseash main.c
+```
 
-<img width="729" height="119" alt="image" src="https://github.com/user-attachments/assets/008339d4-550c-4fbe-b35d-807052cd42bb" />
+### Lancement
+```bash
+./enseash
+```
 
-### Question 7 :
+```
+Bienvenue dans le Shell ENSEA.
+Pour quitter, tapez 'exit'
+enseah %
+```
 
-Cette question nous demande de rediriger les entrées et sorties des processus vers un fichier défini par l'utilisateur. Pour cela, on utilise la fonction de la question 6 et on regarde si le caractère '<' ou '>' apparaît dans la liste des arguments. Si c'est le cas, alors on change la sortie standard (>) ou l'entrée standard (<) en utilisant la fonction ```dup2``` qui permet ici de changer le file descriptor de l'entrée ou la sortie standard. Avec cette fonction, on peut faire la redirection voulu. Par exemple, en faisant ```ls > filelist.txt``` on modifie la sortie standard par ```filelist.txt``` qui est ouvert ou créé (s'il n'existait pas) et qui stocke la sortie de ```ls```. Et inversement pour par exemple : ```wc -l < filelist.txt```, la commande ```wc -l``` va compter le nombre de ligne qu'il y a dans ```filelist.txt```. Enfin, on remplace le caractère '<' ou '>' par NULL, ce qui indique à ```execlp``` qu'il s'agit de la fin de la commande. Les arguments suivants seront considérés comme une autre commande. 
+---
 
-<img width="727" height="233" alt="image" src="https://github.com/user-attachments/assets/b5cf7049-7736-4980-8e08-f3ae61c2bf9a" />
+## Structure du code
 
-### Question 8 :
+| Fonction | Description |
+|---|---|
+| `main()` | Boucle principale du shell : lecture, parsing et exécution des commandes |
+| `strslice()` | Découpe une chaîne en tableau d'arguments (délimiteur : espace) |
+| `searchChar()` | Recherche un caractère dans un buffer (utilisé pour détecter `\n`) |
+| `changestdout()` | Redirige la sortie standard vers un fichier via `dup2()` |
+| `changestdin()` | Redirige l'entrée standard depuis un fichier via `dup2()` |
 
-On a commencer à travailler sur le code de la gestion du pipe '|' mais on a pas réussi à temps de finir le code. L'idée derrière le code est de créer un processus fils de plus qu'il y a de '|' et ensuite utiliser la fonction ```pipe``` pour rediriger la sortie du premier fils vers l'entrée du second fils et attendre la fils du dernier fils qui exécute la dernière commande avant de retrouner dans le processus père et reboucler. 
+---
+
+## Limitations connues et pistes d'amélioration
+
+- **Pipes (`|`)** : partiellement explorés mais non implémentés. L'approche envisagée consiste à créer autant de processus fils que de segments séparés par `|`, en reliant leurs entrées/sorties avec `pipe()`.
+- **Historique des commandes** : non implémenté.
+- **Combinaison `<` et `>`** : les deux redirections peuvent être spécifiées dans la même commande mais le comportement n'a pas été exhaustivement testé.
+- La taille du buffer d'entrée est fixée à 128 octets (`BUFFER_SIZE`).
+
+---
+
+## Syscalls et fonctions système utilisés
+
+`read`, `write`, `fork`, `execvp`, `wait`, `open`, `dup2`, `clock_gettime`, `strtok`
